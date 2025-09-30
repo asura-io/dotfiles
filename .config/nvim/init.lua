@@ -27,6 +27,7 @@ vim.cmd([[
 
 	  " Color scheme
 	  Plug 'morhetz/gruvbox' 
+    Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 
 	  " Neovim Completion Manager
 	  "   run `:help ncm2` for more information
@@ -95,7 +96,6 @@ vim.cmd([[
 	" Initialize the plugin system 
 	call plug#end()
 
-	colorscheme gruvbox
 
 	"" Run fzf.vim - command is Files
 	let g:fzf_default_opts = '--layout=reverse --preview "bat --style=numbers --color=always --line-range :300 {}" --preview-window right:90% --height 20%'
@@ -171,13 +171,42 @@ vim.cmd([[
 	let g:copilot#enabled = 1
 ]])
 
+-- Configure Catppuccin BEFORE setting the colorscheme
+require("catppuccin").setup({
+    flavour = "auto",
+    background = {
+        light = "latte",
+        dark = "mocha",
+    },
+})
+
+-- Set Catppuccin flavour based on macOS appearance
+local function set_catppuccin_theme()
+  local handle = io.popen("defaults read -g AppleInterfaceStyle 2>/dev/null")
+  local result = handle:read("*a")
+  handle:close()
+  
+  if result:match("Dark") then
+    require("catppuccin").setup({
+      flavour = "mocha",
+    })
+  else
+    require("catppuccin").setup({
+      flavour = "frappe",
+    })
+  end
+  
+  vim.cmd.colorscheme "catppuccin"
+end
+
+set_catppuccin_theme()
+
 vim.api.nvim_create_user_command('LiveGrepDir', function()
   require('telescope.builtin').live_grep({
     search_dirs = { vim.fn.input("Search directory: ") }
   })
 end, {})
 
--- Replace your current Telescope setup with this:
 require('telescope').setup({
   pickers = {
     live_grep = {
@@ -196,7 +225,6 @@ require('telescope').setup({
   }
 })
 
--- Make the function available globally with newline handling
 _G.get_visual_selection = function()
   local s_start = vim.fn.getpos("'<")
   local s_end = vim.fn.getpos("'>")
@@ -208,11 +236,8 @@ _G.get_visual_selection = function()
   else
     lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3])
   end
-  -- Replace newlines with spaces and trim
   return string.gsub(table.concat(lines, ' '), '%s+', ' '):gsub('^%s*(.-)%s*$', '%1')
 end
 
--- Replace your current telescope mapping with these:
 vim.api.nvim_set_keymap('n', '<Leader>g', ':Telescope live_grep<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<Leader>g', ':<C-u>lua require("telescope.builtin").live_grep({ default_text = get_visual_selection() })<CR>', { noremap = true, silent = true })
-
