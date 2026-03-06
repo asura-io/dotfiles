@@ -8,6 +8,8 @@ vim.cmd([[
 	set shiftwidth=2
 	" Make backspace delete the correct number of spaces
 	set softtabstop=2
+	" Enable clipboard support - use system clipboard
+	set clipboard=unnamed
 
 
 	" Autoinstall vim-plug
@@ -78,9 +80,6 @@ vim.cmd([[
 	  "   run `:help fzf` for more information
 	  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 	  Plug 'junegunn/fzf.vim'
-
-	  " Markdown
-	  Plug 'instant-markdown/vim-instant-markdown', {'for': 'markdown', 'do': 'yarn install'}
 
 	  " Vim Merge Request
 	  Plug 'google/vim-maktaba'
@@ -171,35 +170,24 @@ vim.cmd([[
 	let g:copilot#enabled = 1
 ]])
 
--- Configure Catppuccin BEFORE setting the colorscheme
-require("catppuccin").setup({
-    flavour = "auto",
-    background = {
-        light = "latte",
-        dark = "mocha",
-    },
-})
+-- Detect if we're in Apple Terminal (doesn't support true colors)
+local is_apple_terminal = vim.env.TERM_PROGRAM == "Apple_Terminal"
 
--- Set Catppuccin flavour based on macOS appearance
-local function set_catppuccin_theme()
+-- Only enable true colors if not in Apple Terminal
+if not is_apple_terminal then
+  vim.opt.termguicolors = true
+end
+
+-- Set background based on macOS appearance
+local function is_dark_mode()
   local handle = io.popen("defaults read -g AppleInterfaceStyle 2>/dev/null")
   local result = handle:read("*a")
   handle:close()
-  
-  if result:match("Dark") then
-    require("catppuccin").setup({
-      flavour = "mocha",
-    })
-  else
-    require("catppuccin").setup({
-      flavour = "frappe",
-    })
-  end
-  
-  vim.cmd.colorscheme "catppuccin"
+  return result:match("Dark") ~= nil
 end
 
-set_catppuccin_theme()
+vim.opt.background = is_dark_mode() and "dark" or "light"
+vim.cmd.colorscheme "gruvbox"
 
 vim.api.nvim_create_user_command('LiveGrepDir', function()
   require('telescope.builtin').live_grep({
@@ -241,3 +229,8 @@ end
 
 vim.api.nvim_set_keymap('n', '<Leader>g', ':Telescope live_grep<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<Leader>g', ':<C-u>lua require("telescope.builtin").live_grep({ default_text = get_visual_selection() })<CR>', { noremap = true, silent = true })
+
+-- Copy to system clipboard in visual mode with leader-c
+vim.api.nvim_set_keymap('v', '<Leader>c', '"+y', { noremap = true, silent = true })
+-- Alternative: Use Ctrl+C to copy (works in most terminals)
+vim.api.nvim_set_keymap('v', '<C-c>', '"+y', { noremap = true, silent = true })
