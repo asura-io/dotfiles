@@ -1,0 +1,12 @@
+{
+  "env": {
+    "AWS_PROFILE": "BedrockAccess",
+    "AWS_REGION": "us-west-2",
+    "CLAUDE_CODE_USE_BEDROCK": "1"
+  },
+  "model": "opus",
+  "enabledPlugins": {
+    "safety-review@neuralink-claude-plugins": true
+  },
+  "alwaysThinkingEnabled": false
+}
