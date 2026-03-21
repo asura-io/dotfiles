@@ -8,5 +8,5 @@
   "enabledPlugins": {
     "safety-review@neuralink-claude-plugins": true
   },
-  "alwaysThinkingEnabled": false
+  "alwaysThinkingEnabled": true
 }

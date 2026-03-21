@@ -191,7 +191,7 @@ vim.cmd.colorscheme "gruvbox"
 
 vim.api.nvim_create_user_command('LiveGrepDir', function()
   require('telescope.builtin').live_grep({
-    search_dirs = { vim.fn.input("Search directory: ") }
+    search_dirs = { vim.fn.input("Search directory: ", "", "dir") }
   })
 end, {})
 
